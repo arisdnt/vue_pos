@@ -1,0 +1,286 @@
+VuePOS Indonesia - Project Folder Structure
+=============================================
+
+vue_pos/
+├── docs/                           # 📚 Documentation
+│   ├── database_schema_docs.md     # Database schema documentation
+│   ├── implementation_plan.md      # Implementation plan
+│   └── folder_structure.txt        # This file
+│
+├── src/                            # 💻 Frontend Source Code
+│   │
+│   ├── assets/                     # Static Assets
+│   │   └── icons/                  # SVG icons
+│   │
+│   ├── components/                 # 🧩 Reusable Components (max 200 LOC)
+│   │   │
+│   │   ├── base/                   # ═══ BASE FORM COMPONENTS ═══
+│   │   │   ├── WinButton.vue       # Button dengan variants (primary, secondary, danger)
+│   │   │   ├── WinIconButton.vue   # Icon-only button
+│   │   │   ├── WinInput.vue        # Text input field
+│   │   │   ├── WinSelect.vue       # Dropdown select
+│   │   │   ├── WinMultiselect.vue  # Multi-select dropdown
+│   │   │   ├── WinCheckbox.vue     # Checkbox input
+│   │   │   ├── WinSwitch.vue       # Toggle switch
+│   │   │   ├── WinRadio.vue        # Radio button
+│   │   │   ├── WinTextarea.vue     # Multiline text input
+│   │   │   ├── WinDatePicker.vue   # Date picker
+│   │   │   ├── WinSearchSelect.vue # Searchable select with autocomplete
+│   │   │   └── WinField.vue        # Field wrapper (label + input + validation)
+│   │   │
+│   │   ├── layout/                 # ═══ LAYOUT COMPONENTS ═══
+│   │   │   ├── WinWindow.vue       # Main window frame
+│   │   │   ├── WinTitleBar.vue     # Window title bar
+│   │   │   ├── WinMenuBar.vue      # Application menu bar
+│   │   │   ├── WinStatusBar.vue    # Bottom status bar
+│   │   │   ├── WinToolbar.vue      # Toolbar with action buttons
+│   │   │   ├── WinSidebar.vue      # Side navigation panel
+│   │   │   └── WinTabs.vue         # Tab container
+│   │   │
+│   │   ├── data/                   # ═══ DATA DISPLAY COMPONENTS ═══
+│   │   │   ├── WinTable.vue        # Data table dengan sorting/filtering
+│   │   │   ├── WinTableRow.vue     # Table row dengan context menu
+│   │   │   ├── WinCard.vue         # Info card container
+│   │   │   ├── WinList.vue         # Vertical list view
+│   │   │   ├── WinTree.vue         # Hierarchical tree view
+│   │   │   └── WinPaginate.vue     # Pagination controls
+│   │   │
+│   │   ├── feedback/               # ═══ FEEDBACK COMPONENTS ═══
+│   │   │   ├── WinToast.vue        # Toast notification
+│   │   │   ├── WinAlert.vue        # Alert dialog
+│   │   │   ├── WinProgress.vue     # Progress bar
+│   │   │   ├── WinSpinner.vue      # Loading spinner
+│   │   │   └── WinNotice.vue       # Notice/warning banner
+│   │   │
+│   │   ├── crud/                   # ═══ GENERIC CRUD COMPONENTS ═══
+│   │   │   ├── WinCrud.vue         # Generic CRUD table (list + actions)
+│   │   │   └── WinCrudForm.vue     # Dynamic form builder for CRUD
+│   │   │
+│   │   └── pos/                    # ═══ POS-SPECIFIC COMPONENTS ═══
+│   │       ├── ProductGrid.vue     # Product grid untuk POS
+│   │       ├── CartList.vue        # Shopping cart list
+│   │       ├── CartItem.vue        # Single cart item
+│   │       ├── PaymentPanel.vue    # Payment panel
+│   │       ├── CustomerSelect.vue  # Customer selector
+│   │       ├── ReceiptPreview.vue  # Receipt preview
+│   │       └── NumPad.vue          # Numeric keypad
+│   │
+│   ├── popups/                     # 🗨️ MODAL POPUPS (43+ files)
+│   │   │
+│   │   ├── base/                   # --- Base Modal Components ---
+│   │   │   ├── PopupContainer.vue  # Modal wrapper/overlay
+│   │   │   ├── AlertPopup.vue      # Simple alert message
+│   │   │   ├── ConfirmPopup.vue    # Confirm action (Yes/No)
+│   │   │   ├── PromptPopup.vue     # Input prompt dialog
+│   │   │   ├── SelectPopup.vue     # Selection list popup
+│   │   │   └── LoadingPopup.vue    # Loading indicator popup
+│   │   │
+│   │   ├── crud/                   # --- Generic CRUD Modals ---
+│   │   │   ├── CreateFormPopup.vue # Generic create form
+│   │   │   ├── EditFormPopup.vue   # Generic edit form
+│   │   │   ├── DetailPopup.vue     # View details
+│   │   │   └── DeleteConfirmPopup.vue # Delete confirmation
+│   │   │
+│   │   ├── products/               # --- Product Management Popups ---
+│   │   │   ├── ProductFormPopup.vue    # Create/Edit product
+│   │   │   ├── ProductDetailPopup.vue  # View product detail
+│   │   │   ├── ProductPreviewPopup.vue # Quick product preview
+│   │   │   ├── CategoryFormPopup.vue   # Category form
+│   │   │   ├── UnitFormPopup.vue       # Unit form
+│   │   │   └── StockAdjustPopup.vue    # Manual stock adjustment
+│   │   │
+│   │   ├── customers/              # --- Customer Management Popups ---
+│   │   │   ├── CustomerFormPopup.vue      # Customer form
+│   │   │   ├── CustomerDetailPopup.vue    # Customer detail view
+│   │   │   ├── CustomerSelectPopup.vue    # POS customer selector
+│   │   │   ├── CustomerGroupFormPopup.vue # Customer group
+│   │   │   └── CustomerTransactionPopup.vue # Transaction history
+│   │   │
+│   │   ├── orders/                 # --- Order/Transaction Popups ---
+│   │   │   ├── OrderPreviewPopup.vue   # Order detail view
+│   │   │   ├── OrderFilterPopup.vue    # Order filter options
+│   │   │   ├── OrderRefundPopup.vue    # Process refund
+│   │   │   └── OrderPrintPopup.vue     # Print receipt options
+│   │   │
+│   │   ├── pos/                    # --- POS Operation Popups ---
+│   │   │   ├── POSPaymentPopup.vue        # Payment processing
+│   │   │   ├── POSDiscountPopup.vue       # Apply discount
+│   │   │   ├── POSQuantityPopup.vue       # Change quantity
+│   │   │   ├── POSNotePopup.vue           # Add order note
+│   │   │   ├── POSHoldOrderPopup.vue      # Hold/park order
+│   │   │   ├── POSPendingOrdersPopup.vue  # View pending orders
+│   │   │   ├── POSQuickProductPopup.vue   # Quick add product
+│   │   │   ├── POSSearchProductPopup.vue  # Product search
+│   │   │   ├── POSCouponPopup.vue         # Apply coupon
+│   │   │   ├── POSShippingPopup.vue       # Shipping info
+│   │   │   └── POSOrderTypePopup.vue      # Order type (dine-in/takeaway)
+│   │   │
+│   │   ├── register/               # --- Cash Register Popups ---
+│   │   │   ├── RegisterOpenPopup.vue   # Open cash register
+│   │   │   ├── RegisterClosePopup.vue  # Close register
+│   │   │   ├── RegisterActionPopup.vue # Cash in/out
+│   │   │   └── RegisterHistoryPopup.vue # Register transaction history
+│   │   │
+│   │   ├── inventory/              # --- Inventory/Procurement Popups ---
+│   │   │   ├── ProcurementFormPopup.vue  # Create/Edit PO
+│   │   │   ├── ProcurementDetailPopup.vue # PO detail
+│   │   │   ├── ProviderFormPopup.vue     # Supplier form
+│   │   │   └── StockTransferPopup.vue    # Inter-store transfer
+│   │   │
+│   │   ├── settings/               # --- Settings Popups ---
+│   │   │   ├── StoreFormPopup.vue       # Store settings
+│   │   │   ├── UserFormPopup.vue        # User CRUD
+│   │   │   ├── RoleFormPopup.vue        # Role management
+│   │   │   ├── PaymentTypeFormPopup.vue # Payment type CRUD
+│   │   │   └── TaxFormPopup.vue         # Tax settings
+│   │   │
+│   │   └── reports/                # --- Report Popups ---
+│   │       ├── ReportFilterPopup.vue    # Date/filter options
+│   │       └── ReportExportPopup.vue    # Export format selection
+│   │
+│   ├── composables/                # 🔧 Vue Composables (max 200 LOC each)
+│   │   ├── useAuth.ts              # Authentication logic
+│   │   ├── useStore.ts             # Current store context
+│   │   ├── useRegister.ts          # Cash register operations
+│   │   ├── useCart.ts              # Shopping cart logic
+│   │   ├── useProducts.ts          # Product CRUD & search
+│   │   ├── useCustomers.ts         # Customer operations
+│   │   ├── useOrders.ts            # Order/sales operations
+│   │   ├── useSync.ts              # Offline sync manager
+│   │   ├── useKeyboard.ts          # Keyboard shortcut handler
+│   │   ├── usePrint.ts             # Receipt printing
+│   │   └── usePopup.ts             # ★ Popup state management
+│   │
+│   ├── libraries/                  # 📚 Utility Libraries
+│   │   ├── popup.ts                # ★ Popup class (open/close/stack)
+│   │   ├── popup-closer.ts         # ★ ESC key handler
+│   │   ├── form-validation.ts      # Form validation rules
+│   │   ├── http-client.ts          # HTTP/API wrapper
+│   │   └── snackbar.ts             # Toast notification manager
+│   │
+│   ├── db/                         # 💾 Database Layer
+│   │   ├── supabase.ts             # Supabase client initialization
+│   │   ├── dexie.ts                # Dexie (IndexedDB) schema definition
+│   │   └── sync/                   # Sync utilities
+│   │       ├── outbox.ts           # Outbox pattern for offline sync
+│   │       ├── resolver.ts         # Conflict resolution
+│   │       └── realtime.ts         # Supabase Realtime subscriptions
+│   │
+│   ├── layouts/                    # 🏗️ Page Layouts
+│   │   ├── MainLayout.vue          # Main app layout (sidebar + content)
+│   │   ├── AuthLayout.vue          # Login/register layout
+│   │   └── POSLayout.vue           # Full-screen POS layout
+│   │
+│   ├── pages/                      # 📄 Page Views (List Pages Only)
+│   │   ├── auth/
+│   │   │   ├── LoginPage.vue
+│   │   │   └── LogoutPage.vue
+│   │   ├── dashboard/
+│   │   │   └── DashboardPage.vue
+│   │   ├── pos/
+│   │   │   ├── POSPage.vue         # Main POS screen
+│   │   │   └── RegisterPage.vue    # Register management
+│   │   ├── products/
+│   │   │   ├── ProductListPage.vue # Product list + trigger popups
+│   │   │   └── CategoryListPage.vue
+│   │   ├── inventory/
+│   │   │   ├── StockPage.vue
+│   │   │   └── ProcurementListPage.vue
+│   │   ├── customers/
+│   │   │   └── CustomerListPage.vue
+│   │   ├── orders/
+│   │   │   └── OrderListPage.vue
+│   │   ├── reports/
+│   │   │   ├── SalesReportPage.vue
+│   │   │   └── InventoryReportPage.vue
+│   │   └── settings/
+│   │       ├── StoreSettingsPage.vue
+│   │       ├── UserListPage.vue
+│   │       └── PaymentTypesPage.vue
+│   │
+│   ├── router/                     # 🛣️ Vue Router
+│   │   └── index.ts                # Route definitions
+│   │
+│   ├── stores/                     # 🗃️ Pinia State Management
+│   │   ├── authStore.ts            # Auth state
+│   │   ├── storeStore.ts           # Current store context
+│   │   ├── cartStore.ts            # POS cart state
+│   │   ├── productStore.ts         # Product cache
+│   │   ├── popupStore.ts           # ★ Popup stack management
+│   │   └── settingsStore.ts        # App settings
+│   │
+│   ├── styles/                     # 🎨 Global Styles
+│   │   ├── base.css                # CSS reset & base styles
+│   │   ├── variables.css           # CSS custom properties (colors, spacing)
+│   │   ├── windows.css             # ★ Windows 10 theme styles
+│   │   ├── popup.css               # ★ Modal/popup styles
+│   │   └── print.css               # Print-specific styles for receipts
+│   │
+│   ├── types/                      # 📘 TypeScript Types
+│   │   ├── database.ts             # Supabase-generated types
+│   │   ├── pos.ts                  # POS-specific types
+│   │   ├── popup.ts                # ★ Popup prop types
+│   │   └── components.ts           # Component prop types
+│   │
+│   ├── utils/                      # 🛠️ Utility Functions
+│   │   ├── currency.ts             # Currency formatting (Rupiah)
+│   │   ├── date.ts                 # Date formatting (Indonesia locale)
+│   │   ├── validation.ts           # Validation helpers
+│   │   ├── barcode.ts              # Barcode generation/scanning
+│   │   └── shortcuts.ts            # Keyboard shortcut definitions
+│   │
+│   ├── App.vue                     # Root Vue component
+│   └── main.ts                     # Application entry point
+│
+├── src-tauri/                      # 🦀 Tauri Rust Backend
+│   ├── src/
+│   │   └── main.rs                 # Tauri main file
+│   ├── Cargo.toml                  # Rust dependencies
+│   └── tauri.conf.json             # Tauri configuration
+│
+├── .env.example                    # Environment variables template
+├── index.html                      # HTML entry point
+├── package.json                    # NPM dependencies
+├── tailwind.config.js              # TailwindCSS configuration
+├── tsconfig.json                   # TypeScript configuration
+└── vite.config.ts                  # Vite build configuration
+
+=============================================
+KEY PATTERNS:
+=============================================
+
+1. MODAL-BASED CRUD
+   - List pages (pages/) trigger popups
+   - All forms in popups/ directory
+   - No separate create/edit routes
+
+2. SINGLE RESPONSIBILITY (Max 200 LOC)
+   - Each component has one clear purpose
+   - Composables handle business logic
+   - Components only handle presentation
+
+3. WINDOWS 10 NATIVE FEEL
+   - No rounded corners
+   - Square, clean design
+   - Efficient space usage
+   - Professional business aesthetic
+
+4. OFFLINE-FIRST
+   - Dexie (IndexedDB) for local storage
+   - Supabase for cloud sync
+   - Outbox pattern for queue management
+
+5. MULTI-STORE SUPPORT
+   - Owner: tidak terikat store (all access)
+   - Manager/Cashier: terikat store tertentu
+   - store_id filter otomatis via RLS
+
+=============================================
+COMPONENT NAMING CONVENTION:
+=============================================
+
+- Base components: Win{Component}.vue
+- Popups: {Feature}{Action}Popup.vue
+- Pages: {Feature}ListPage.vue / {Feature}Page.vue
+- Composables: use{Feature}.ts
+- Stores: {feature}Store.ts

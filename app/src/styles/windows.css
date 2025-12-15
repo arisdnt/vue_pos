@@ -1,0 +1,225 @@
+/* Windows 10 Native Desktop Theme */
+
+/* Window Frame */
+.win-window {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--win-bg);
+    overflow: hidden;
+}
+
+/* Title Bar */
+.win-titlebar {
+    height: 32px;
+    background-color: var(--win-panel);
+    border-bottom: 1px solid var(--win-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-sm);
+    user-select: none;
+}
+
+.win-titlebar-title {
+    font-size: var(--font-size-sm);
+    font-weight: 400;
+    color: var(--win-text);
+}
+
+/* Menu Bar */
+.win-menubar {
+    height: 28px;
+    background-color: var(--win-panel);
+    border-bottom: 1px solid var(--win-border);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-sm);
+}
+
+.win-menu-item {
+    padding: 4px 12px;
+    font-size: var(--font-size-sm);
+    color: var(--win-text);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+}
+
+.win-menu-item:hover {
+    background-color: var(--win-accent-light);
+}
+
+.win-menu-item:active {
+    background-color: var(--win-accent);
+    color: white;
+}
+
+/* Toolbar */
+.win-toolbar {
+    height: 40px;
+    background-color: var(--win-panel);
+    border-bottom: 1px solid var(--win-border);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-md);
+}
+
+/* Status Bar */
+.win-statusbar {
+    height: 24px;
+    background-color: var(--win-panel);
+    border-top: 1px solid var(--win-border);
+    display: flex;
+    align-items: center;
+    padding: 0 var(--spacing-md);
+    font-size: var(--font-size-xs);
+    color: var(--win-text-secondary);
+}
+
+/* Panel/Card */
+.win-panel {
+    background-color: var(--win-panel);
+    border: 1px solid var(--win-border);
+}
+
+/* Button - Windows style */
+.win-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 15px;
+    font-size: var(--font-size-sm);
+    font-family: var(--font-family);
+    color: var(--win-text);
+    background-color: var(--win-panel);
+    border: 1px solid var(--win-border);
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.1s;
+}
+
+.win-button:hover {
+    background-color: #e5f3ff;
+    border-color: var(--win-accent);
+}
+
+.win-button:active {
+    background-color: #cce8ff;
+}
+
+.win-button:disabled {
+    color: var(--win-text-disabled);
+    background-color: #f0f0f0;
+    border-color: #d0d0d0;
+    cursor: not-allowed;
+}
+
+.win-button-primary {
+    background-color: var(--win-accent);
+    color: white;
+    border-color: var(--win-accent);
+}
+
+.win-button-primary:hover {
+    background-color: var(--win-accent-hover);
+}
+
+.win-button-primary:active {
+    background-color: var(--win-accent-active);
+}
+
+/* Input - Windows style */
+.win-input {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: var(--font-family);
+    color: var(--win-text);
+    background-color: white;
+    border: 1px solid var(--win-border);
+    width: 100%;
+}
+
+.win-input:hover {
+    border-color: var(--win-border-dark);
+}
+
+.win-input:focus {
+    border-color: var(--win-accent);
+    outline: none;
+}
+
+.win-input:disabled {
+    background-color: #f0f0f0;
+    color: var(--win-text-disabled);
+}
+
+/* Select - Windows style */
+.win-select {
+    padding: 8px 12px;
+    font-size: 14px;
+    font-family: var(--font-family);
+    color: var(--win-text);
+    background-color: white;
+    border: 1px solid var(--win-border);
+    width: 100%;
+    cursor: pointer;
+}
+
+.win-select:hover {
+    border-color: var(--win-border-dark);
+}
+
+.win-select:focus {
+    border-color: var(--win-accent);
+    outline: none;
+}
+
+.win-select:disabled {
+    background-color: #f0f0f0;
+    color: var(--win-text-disabled);
+    cursor: not-allowed;
+}
+
+select.win-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 32px;
+}
+
+/* Table - Windows style */
+.win-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+}
+
+.win-table th {
+    background-color: #f8f8f8;
+    border: 1px solid var(--win-border);
+    padding: 6px 12px;
+    text-align: left;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--win-text);
+}
+
+.win-table td {
+    border: 1px solid var(--win-border);
+    padding: 6px 12px;
+    font-size: var(--font-size-sm);
+    color: var(--win-text);
+}
+
+.win-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.win-table tbody tr.selected {
+    background-color: var(--win-accent-light);
+}

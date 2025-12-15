@@ -1,0 +1,124 @@
+/* Popup/Modal styles */
+
+/* Popup Overlay */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal-backdrop);
+    animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Popup Body */
+.popup-body {
+    background-color: white;
+    border: 1px solid var(--win-border);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    max-width: 90vw;
+    max-height: 90vh;
+    z-index: var(--z-modal);
+    animation: zoomIn 0.15s ease-out;
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.popup-body.closing {
+    animation: zoomOut 0.15s ease-in;
+}
+
+@keyframes zoomOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+/* Popup Header */
+.popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--win-border);
+    background-color: #f8f8f8;
+}
+
+.popup-header h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--win-text);
+    margin: 0;
+}
+
+/* Popup Content */
+.popup-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+}
+
+/* Popup Footer */
+.popup-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-md);
+    border-top: 1px solid var(--win-border);
+    background-color: #f8f8f8;
+}
+
+/* Popup Sizes */
+.popup-sm {
+    width: 400px;
+}
+
+.popup-md {
+    width: 600px;
+}
+
+.popup-lg {
+    width: 800px;
+}
+
+.popup-xl {
+    width: 1000px;
+}
+
+.popup-full {
+    width: 95vw;
+    height: 95vh;
+}
