@@ -17,13 +17,13 @@
 
     <!-- Right: Window controls -->
     <div class="titlebar-controls">
-      <button class="titlebar-button" @click="minimizeWindow" title="Minimize">
+      <WinWindowButton variant="minimize" title="Minimize" @click="minimizeWindow">
         <svg width="10" height="1" viewBox="0 0 10 1">
           <rect width="10" height="1" fill="currentColor"/>
         </svg>
-      </button>
+      </WinWindowButton>
       
-      <button class="titlebar-button" @click="toggleMaximize" title="Maximize">
+      <WinWindowButton variant="maximize" title="Maximize" @click="toggleMaximize">
         <svg v-if="!isMaximized" width="10" height="10" viewBox="0 0 10 10">
           <rect x="0" y="0" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1"/>
         </svg>
@@ -31,13 +31,13 @@
           <rect x="0" y="2" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1"/>
           <rect x="2" y="0" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1"/>
         </svg>
-      </button>
+      </WinWindowButton>
       
-      <button class="titlebar-button close-button" @click="closeWindow" title="Close">
+      <WinWindowButton variant="close" title="Close" @click="closeWindow">
         <svg width="10" height="10" viewBox="0 0 10 10">
           <path d="M0,0 L10,10 M10,0 L0,10" stroke="currentColor" stroke-width="1"/>
         </svg>
-      </button>
+      </WinWindowButton>
     </div>
   </div>
 </template>
@@ -47,29 +47,60 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import WinMenuBar from './WinMenuBar.vue'
+import { WinWindowButton } from '@/components/base'
 import type { MenuItem } from '@/data/menuData'
 
 const router = useRouter()
 const isMaximized = ref(false)
-const appWindow = getCurrentWindow()
+
+// Check if running in Tauri environment
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
 onMounted(async () => {
-  isMaximized.value = await appWindow.isMaximized()
-  appWindow.onResized(async () => {
+  if (!isTauri) return
+  
+  try {
+    const appWindow = getCurrentWindow()
     isMaximized.value = await appWindow.isMaximized()
-  })
+    appWindow.onResized(async () => {
+      isMaximized.value = await appWindow.isMaximized()
+    })
+  } catch (error) {
+    console.warn('Failed to initialize window controls:', error)
+  }
 })
 
 async function minimizeWindow() {
-  await appWindow.minimize()
+  if (!isTauri) return
+  
+  try {
+    const appWindow = getCurrentWindow()
+    await appWindow.minimize()
+  } catch (error) {
+    console.error('Failed to minimize window:', error)
+  }
 }
 
 async function toggleMaximize() {
-  await appWindow.toggleMaximize()
+  if (!isTauri) return
+  
+  try {
+    const appWindow = getCurrentWindow()
+    await appWindow.toggleMaximize()
+  } catch (error) {
+    console.error('Failed to toggle maximize:', error)
+  }
 }
 
 async function closeWindow() {
-  await appWindow.close()
+  if (!isTauri) return
+  
+  try {
+    const appWindow = getCurrentWindow()
+    await appWindow.close()
+  } catch (error) {
+    console.error('Failed to close window:', error)
+  }
 }
 
 async function handleMenuAction(item: MenuItem) {
@@ -82,7 +113,14 @@ async function handleMenuAction(item: MenuItem) {
   }
   
   if (item.id === 'exit') {
-    await appWindow.close()
+    if (!isTauri) return
+    
+    try {
+      const appWindow = getCurrentWindow()
+      await appWindow.close()
+    } catch (error) {
+      console.error('Failed to close window:', error)
+    }
     return
   }
   
@@ -128,40 +166,5 @@ async function handleMenuAction(item: MenuItem) {
   display: flex;
   height: 100%;
   -webkit-app-region: no-drag;
-}
-
-.titlebar-button {
-  width: 46px;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: none;
-  color: var(--win-text);
-  cursor: pointer;
-  transition: background-color 0.1s;
-}
-
-.titlebar-button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.titlebar-button:active {
-  background-color: rgba(0, 0, 0, 0.1);
-}
-
-.titlebar-button.close-button:hover {
-  background-color: #e81123;
-  color: white;
-}
-
-.titlebar-button.close-button:active {
-  background-color: #c50f1f;
-  color: white;
-}
-
-.titlebar-button svg {
-  pointer-events: none;
 }
 </style>

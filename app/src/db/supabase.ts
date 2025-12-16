@@ -13,15 +13,31 @@ if (!supabaseUrl || !supabaseAnonKey) {
  * - Automatically handles authentication
  * - Row Level Security (RLS) policies apply
  * - Realtime subscriptions available
+ * 
+ * Session Configuration:
+ * - persistSession: true - Keep session in localStorage
+ * - autoRefreshToken: true - Automatically refresh before expiry
+ * - detectSessionInUrl: true - Handle auth callbacks
  */
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     auth: {
         persistSession: true,
         autoRefreshToken: true,
+        detectSessionInUrl: true,
+        // Storage key for session
+        storageKey: 'vue-pos-auth',
+        // Use localStorage for persistence
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     },
     realtime: {
         params: {
             eventsPerSecond: 10,
+        },
+    },
+    // Global error handling
+    global: {
+        headers: {
+            'x-app-version': '1.0.0',
         },
     },
 })

@@ -23,3 +23,12 @@ export { default as WinSearchSelect } from './WinSearchSelect.vue'
 export { default as WinPage } from './WinPage.vue'
 export { default as WinPageHeader } from './WinPageHeader.vue'
 export { default as WinPageContent } from './WinPageContent.vue'
+
+// Menu Components
+export { default as WinMenuItem } from './WinMenuItem.vue'
+export { default as WinMenuDropdown } from './WinMenuDropdown.vue'
+export { default as WinMenuDropdownItem } from './WinMenuDropdownItem.vue'
+export { default as WinWindowButton } from './WinWindowButton.vue'
+
+// Status Bar Component
+export { default as WinStatusBar, StatusItem, StatusSeparator, StatusIndicator, StatusIcon, StatusLabel, CopyButton } from './WinStatusBar.vue'

@@ -53,10 +53,12 @@ import LoginForm from '@/components/auth/LoginForm.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const appWindow = getCurrentWindow()
 
 const error = ref('')
 const loading = ref(false)
+
+// Check if running in Tauri environment
+const isTauri = typeof window !== 'undefined' && '__TAURI__' in window
 
 async function handleLogin(credentials: { email: string; password: string }) {
   error.value = ''
@@ -73,11 +75,25 @@ async function handleLogin(credentials: { email: string; password: string }) {
 }
 
 async function minimizeWindow() {
-  await appWindow.minimize()
+  if (!isTauri) return
+  
+  try {
+    const appWindow = getCurrentWindow()
+    await appWindow.minimize()
+  } catch (error) {
+    console.error('Failed to minimize window:', error)
+  }
 }
 
 async function closeWindow() {
-  await appWindow.close()
+  if (!isTauri) return
+  
+  try {
+    const appWindow = getCurrentWindow()
+    await appWindow.close()
+  } catch (error) {
+    console.error('Failed to close window:', error)
+  }
 }
 </script>
 
