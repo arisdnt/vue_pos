@@ -149,6 +149,12 @@ const router = createRouter({
             meta: { requiresAuth: true, title: 'Transfer Stok' }
         },
         {
+            path: '/procurement/quick',
+            name: 'procurement-quick',
+            component: () => import('@/pages/procurement/QuickProcurementPage.vue'),
+            meta: { requiresAuth: true, title: 'Pembelian Cepat' }
+        },
+        {
             path: '/procurement',
             name: 'procurement',
             component: () => import('@/pages/procurement/ProcurementListPage.vue'),
@@ -236,6 +242,12 @@ const router = createRouter({
             component: () => import('@/pages/settings/ReceiptSettingsPage.vue'),
             meta: { requiresAuth: true, title: 'Format Struk' }
         },
+        {
+            path: '/settings/outbox-sync',
+            name: 'outbox-sync',
+            component: () => import('@/pages/settings/OutboxSyncPage.vue'),
+            meta: { requiresAuth: true, title: 'Outbox Sync' }
+        },
 
         // === About ===
         {
@@ -251,13 +263,42 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
     const authStore = useAuthStore()
 
+    const hasPersistedSession =
+        typeof window !== 'undefined' &&
+        !!window.localStorage.getItem('vue-pos-auth')
+
+    if (import.meta.env.DEV) {
+        console.log(
+            '[RouterGuard] beforeEach',
+            'to:', to.path,
+            'from:', from.path,
+            'hasUser:', !!authStore.user,
+            'loading:', authStore.loading,
+        )
+    }
+
     if (!authStore.user && !authStore.loading) {
         await authStore.init()
     }
 
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth !== false)
 
+    if (import.meta.env.DEV) {
+        console.log(
+            '[RouterGuard] auth check',
+            'to:', to.path,
+            'requiresAuth:', requiresAuth,
+            'isAuthenticated:', authStore.isAuthenticated,
+            'userEmail:', authStore.user?.email || null,
+        )
+    }
+
     if (requiresAuth && !authStore.isAuthenticated) {
+        // Jika ada session tersimpan di Supabase (localStorage),
+        // izinkan akses sementara dan biarkan Supabase rehydrate session.
+        if (hasPersistedSession) {
+            return next()
+        }
         next('/login')
     } else if (to.path === '/login' && authStore.isAuthenticated) {
         next('/dashboard')

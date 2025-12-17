@@ -2,9 +2,45 @@ import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
 import { supabase, getCurrentUser, getUserStores } from '@/db/supabase'
 import type { User, AuthChangeEvent } from '@supabase/supabase-js'
+import { startSyncManager } from '@/db/syncManager'
 
-// Inactivity timeout in milliseconds (1 hour)
-const INACTIVITY_TIMEOUT = 60 * 60 * 1000
+// Inactivity timeout configuration
+// - Default production: 60 menit (kasir otomatis logout jika lama tidak dipakai)
+// - Default development: 720 menit / 12 jam (agar tidak sering terlogout saat coding)
+// - Bisa dioverride lewat VITE_INACTIVITY_TIMEOUT_MINUTES
+//   * > 0  : timeout dalam menit
+//   * = 0  : nonaktifkan auto-logout karena inactivity
+const DEFAULT_TIMEOUT_MINUTES = import.meta.env.DEV ? 12 * 60 : 60
+const rawTimeoutMinutes = import.meta.env.VITE_INACTIVITY_TIMEOUT_MINUTES
+
+let INACTIVITY_TIMEOUT: number | null
+
+if (rawTimeoutMinutes !== undefined && rawTimeoutMinutes !== '') {
+    const parsed = Number(rawTimeoutMinutes)
+    if (Number.isFinite(parsed) && parsed > 0) {
+        INACTIVITY_TIMEOUT = parsed * 60 * 1000
+    } else if (parsed === 0) {
+        // 0 menit = nonaktifkan auto-logout
+        INACTIVITY_TIMEOUT = null
+    } else {
+        INACTIVITY_TIMEOUT = DEFAULT_TIMEOUT_MINUTES * 60 * 1000
+    }
+} else {
+    INACTIVITY_TIMEOUT = DEFAULT_TIMEOUT_MINUTES * 60 * 1000
+}
+
+if (import.meta.env.DEV) {
+    // Debug info untuk memastikan konfigurasi timeout benar terbaca
+    // Akan muncul sekali saat app start di console browser devtools
+    console.log(
+        '[AuthStore] INACTIVITY_TIMEOUT (ms):',
+        INACTIVITY_TIMEOUT,
+        'raw env:',
+        rawTimeoutMinutes,
+        'default (minutes):',
+        DEFAULT_TIMEOUT_MINUTES,
+    )
+}
 
 export const useAuthStore = defineStore('auth', () => {
     // State
@@ -35,7 +71,19 @@ export const useAuthStore = defineStore('auth', () => {
             clearTimeout(inactivityTimer)
         }
 
-        if (user.value) {
+        // Jika tidak ada user atau timeout dinonaktifkan, jangan set timer
+        if (!user.value || INACTIVITY_TIMEOUT === null) {
+            inactivityTimer = null
+            return
+        }
+
+        if (user.value && INACTIVITY_TIMEOUT > 0) {
+            if (import.meta.env.DEV) {
+                console.log(
+                    '[AuthStore] Scheduling inactivity logout in ms:',
+                    INACTIVITY_TIMEOUT,
+                )
+            }
             inactivityTimer = setTimeout(() => {
                 console.log('Session expired due to inactivity')
                 signOut()
@@ -78,9 +126,18 @@ export const useAuthStore = defineStore('auth', () => {
                 return
             }
 
+            if (import.meta.env.DEV) {
+                console.log(
+                    '[AuthStore] getSession:',
+                    session ? 'FOUND' : 'NONE',
+                    session?.user?.email || null,
+                )
+            }
+
             if (session?.user) {
                 user.value = session.user
                 await loadUserData()
+                startSyncManager()
                 setupActivityListeners()
             }
         } catch (e) {
@@ -101,6 +158,7 @@ export const useAuthStore = defineStore('auth', () => {
                     if (session?.user) {
                         user.value = session.user
                         await loadUserData()
+                        startSyncManager()
                         updateActivity()
                     }
                     break
@@ -139,25 +197,17 @@ export const useAuthStore = defineStore('auth', () => {
         if (!user.value) return
 
         try {
-            // Load role
-            const { data: roleData, error: roleError } = await supabase
-                .from('user_roles')
-                .select('roles(namespace)')
-                .eq('user_id', user.value.id)
-                .single()
+            // 1) Role: gunakan metadata dari auth.users untuk menghindari query user_roles
+            const meta: any = user.value.user_metadata || {}
+            role.value = meta.role || null
 
-            if (roleError) {
-                console.warn('Error loading role:', roleError.message)
-            } else if (roleData) {
-                role.value = (roleData as any).roles?.namespace || null
-            }
-
-            // Load accessible stores
+            // 2) Accessible stores: ambil dari Dexie melalui storeUserService (tanpa RPC get_user_stores)
             try {
-                const stores = await getUserStores()
+                const { getUserStores: getUserStoresDexie } = await import('@/services/storeUserService')
+                const stores = await getUserStoresDexie(user.value.id)
                 accessibleStores.value = stores
             } catch (e) {
-                console.warn('Error loading stores:', e)
+                console.warn('Error loading stores from Dexie:', e)
                 accessibleStores.value = []
             }
         } catch (e) {
@@ -173,6 +223,17 @@ export const useAuthStore = defineStore('auth', () => {
                 password,
             })
             if (error) throw error
+
+            if (data.user) {
+                // Set user immediately so router guard can proceed
+                user.value = data.user
+
+                // Kick off background tasks without blocking the login flow
+                loadUserData().catch((e) => {
+                    console.warn('[AuthStore] loadUserData after signIn failed:', e)
+                })
+                startSyncManager()
+            }
 
             // Setup activity tracking after login
             setupActivityListeners()

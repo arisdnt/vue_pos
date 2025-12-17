@@ -79,14 +79,14 @@ const props = defineProps<{
   modelValue: UserFormData
   mode: 'create' | 'edit'
   userId?: string
-  storeIds?: number[]
+  storeIds?: string[]
   saving?: boolean
   errors?: Record<string, string>
 }>()
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: UserFormData): void
-  (e: 'update:storeIds', value: number[]): void
+  (e: 'update:storeIds', value: string[]): void
   (e: 'submit'): void
   (e: 'cancel'): void
 }>()
@@ -99,7 +99,7 @@ function update(key: keyof UserFormData, value: any) {
   emit('update:modelValue', { ...props.modelValue, [key]: value })
 }
 
-function updateStores(storeIds: number[]) {
+function updateStores(storeIds: string[]) {
   emit('update:storeIds', storeIds)
 }
 </script>

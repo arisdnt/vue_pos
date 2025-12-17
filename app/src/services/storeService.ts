@@ -61,7 +61,7 @@ export async function createStore(storeData: Partial<StoreInsert>, ownerId: stri
 /**
  * Update store
  */
-export async function updateStore(storeId: number, updates: Partial<StoreUpdate>): Promise<Store> {
+export async function updateStore(storeId: string, updates: Partial<StoreUpdate>): Promise<Store> {
     console.log('📝 [storeService] Updating store...', { storeId, updates })
 
     const { data, error } = await supabase
@@ -83,7 +83,7 @@ export async function updateStore(storeId: number, updates: Partial<StoreUpdate>
 /**
  * Delete store
  */
-export async function deleteStore(storeId: number): Promise<void> {
+export async function deleteStore(storeId: string): Promise<void> {
     console.log('🗑️ [storeService] Deleting store...', { storeId })
 
     const { error } = await supabase

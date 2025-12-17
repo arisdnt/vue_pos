@@ -57,7 +57,7 @@ onMounted(() => {
   background-color: #ffffff;
   border: 1px solid #adadad;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  z-index: var(--z-dropdown);
+  z-index: var(--z-popover);
   padding: 4px 0;
 }
 </style>

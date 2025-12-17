@@ -4,7 +4,7 @@ export interface UserData {
     email: string
     password?: string
     role: 'owner' | 'manager' | 'cashier'
-    storeId?: number
+    storeId?: string
     isActive: boolean
 }
 

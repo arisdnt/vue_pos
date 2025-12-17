@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { Eye, Pencil, Trash2 } from 'lucide-vue-next'
 import { 
   WinPage, WinPageHeader, WinPageContent, WinCard, WinTable, WinTableFilter,
@@ -208,9 +208,8 @@ function applyFilters() {
 }
 
 async function loadStoresWithUsers() {
-  await fetchStores()
-  
-  // Load user assignments for each store
+  // stores sudah di-handle oleh Dexie + liveQuery (useStores),
+  // jadi di sini kita hanya meload user assignment dari Dexie.
   for (const store of stores.value) {
     try {
       const users = await storeUserService.getStoreUsers(store.id)
@@ -221,7 +220,15 @@ async function loadStoresWithUsers() {
   }
 }
 
-onMounted(() => loadStoresWithUsers())
+watch(
+  () => stores.value,
+  () => {
+    // setiap kali daftar toko berubah (misalnya setelah bootstrap Dexie
+    // atau setelah create/delete store), refresh daftar pengelola
+    loadStoresWithUsers()
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>

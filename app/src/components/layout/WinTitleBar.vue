@@ -105,21 +105,42 @@ async function closeWindow() {
 
 async function handleMenuAction(item: MenuItem) {
   if (item.id === 'logout') {
-    const { useAuthStore } = await import('@/stores/authStore')
-    const authStore = useAuthStore()
-    await authStore.signOut()
+    try {
+      const { useAuthStore } = await import('@/stores/authStore')
+      const authStore = useAuthStore()
+      await authStore.signOut()
+    } catch (error) {
+      console.error('[TitleBar] Failed to logout from menu:', error)
+    }
     router.push('/login')
     return
   }
   
   if (item.id === 'exit') {
-    if (!isTauri) return
-    
+    // Selalu coba logout dulu agar sesi dan data lokal bersih
     try {
-      const appWindow = getCurrentWindow()
-      await appWindow.close()
+      const { useAuthStore } = await import('@/stores/authStore')
+      const authStore = useAuthStore()
+      await authStore.signOut()
     } catch (error) {
-      console.error('Failed to close window:', error)
+      console.warn('[TitleBar] Failed to sign out before exit:', error)
+    }
+
+    if (isTauri) {
+      try {
+        const appWindow = getCurrentWindow()
+        await appWindow.close()
+      } catch (error) {
+        console.error('Failed to close window:', error)
+      }
+    } else {
+      // Fallback saat berjalan di browser/dev: arahkan ke login
+      router.push('/login')
+      try {
+        window.close()
+      } catch {
+        // window.close bisa ditolak browser, abaikan saja
+      }
     }
     return
   }

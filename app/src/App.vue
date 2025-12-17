@@ -18,14 +18,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useAuthStore } from './stores/authStore'
 import PopupPortal from './components/PopupPortal.vue'
 import WinTitleBar from './components/layout/WinTitleBar.vue'
 import WinStatusBar from './components/layout/WinStatusBar.vue'
 
-const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const pageTitle = ref('VuePOS Indonesia')
@@ -35,10 +33,6 @@ const syncStatus = ref('Tersinkronisasi')
 // Hide title bar and status bar on login page
 const showTitleBar = computed(() => {
   return route.name !== 'login'
-})
-
-onMounted(async () => {
-  await authStore.init()
 })
 
 // Update title based on route

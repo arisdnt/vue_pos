@@ -3,10 +3,23 @@
     <table class="win-table">
       <thead>
         <tr>
-          <th v-for="column in columns" :key="column.key" :style="{ width: column.width }">
+          <th
+            v-for="column in columns"
+            :key="column.key"
+            :style="{ width: column.width }"
+            :class="[
+              'win-table-header-cell',
+              column.align ? `align-${column.align}` : 'align-left'
+            ]"
+          >
             {{ column.label }}
           </th>
-          <th v-if="actions" class="actions-column">Aksi</th>
+          <th
+            v-if="actions"
+            class="win-table-header-cell actions-column align-center"
+          >
+            Aksi
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -20,19 +33,29 @@
             {{ emptyText }}
           </td>
         </tr>
-        <tr 
-          v-else 
-          v-for="(row, index) in data" 
+        <tr
+          v-else
+          v-for="(row, index) in data"
           :key="getRowKey(row, index)"
-          :class="{ clickable: clickable }"
+          :class="['win-table-row', { clickable: clickable }]"
           @click="handleRowClick(row)"
         >
-          <td v-for="column in columns" :key="column.key">
+          <td
+            v-for="column in columns"
+            :key="column.key"
+            :class="[
+              'win-table-cell',
+              column.align ? `align-${column.align}` : 'align-left'
+            ]"
+          >
             <slot :name="`cell(${column.key})`" :row="row" :column="column">
               {{ getCellValue(row, column.key) }}
             </slot>
           </td>
-          <td v-if="actions" class="actions-cell">
+          <td
+            v-if="actions"
+            class="win-table-cell actions-cell align-center"
+          >
             <slot name="actions" :row="row" :index="index"></slot>
           </td>
         </tr>
@@ -49,6 +72,7 @@ interface Column {
   key: string
   label: string
   width?: string
+  align?: 'left' | 'center' | 'right'
 }
 
 const props = withDefaults(defineProps<{
@@ -95,107 +119,154 @@ function handleRowClick(row: any) {
 
 <style scoped>
 .win-table-container {
-  overflow-y: auto;
-  overflow-x: auto;
+  overflow: auto;
   border-radius: 3px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--win-border);
+  background-color: var(--win-panel);
+  box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
 }
 
 .win-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  background: white;
-  border: 1px solid #e5e5e5;
-  border-radius: 3px;
-  overflow: hidden;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background-color: #ffffff;
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
 }
 
-.win-table thead th {
-  padding: 12px 16px;
-  text-align: left;
+.win-table thead {
+  background-color: #f3f3f3;
+}
+
+.win-table-header-cell {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  padding: 8px 10px;
   font-weight: 600;
-  font-size: 14px;
-  color: #333;
-  letter-spacing: -0.01em;
-  background: linear-gradient(to bottom, #fafafa 0%, #f5f5f5 100%);
-  border-bottom: 1px solid #e0e0e0;
-  border-right: 1px solid #efefef;
-  white-space: nowrap; /* Kept from original .win-table th */
+  font-size: var(--font-size-sm);
+  color: var(--win-text);
+  background: linear-gradient(to bottom, #f6f6f6 0%, #eaeaea 100%);
+  border: 1px solid #d9d9d9;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 2px 0 rgba(0, 0, 0, 0.02);
 }
 
-.win-table thead th:last-child {
-  border-right: none;
+.win-table-header-cell.align-left {
+  text-align: left;
 }
 
-.win-table tbody td {
-  padding: 12px 16px;
-  font-size: 14px;
-  color: #1a1a1a;
-  border-bottom: 1px solid #f0f0f0;
-  border-right: 1px solid #f8f8f8;
-  background: white;
-  transition: background-color 0.15s ease; /* Kept from original .win-table td */
+.win-table-header-cell.align-center {
+  text-align: center;
 }
 
-.win-table td:last-child {
-  border-right: none;
+.win-table-header-cell.align-right {
+  text-align: right;
 }
 
-.win-table tbody tr {
-  transition: all 0.15s ease;
+.win-table thead .win-table-header-cell:first-child {
+  border-top-left-radius: 4px;
 }
 
-.win-table tbody tr:hover {
-  background: linear-gradient(to bottom, #fafafa 0%, #f8f8f8 100%);
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.02);
+.win-table thead .win-table-header-cell:last-child {
+  border-top-right-radius: 4px;
 }
 
-.win-table tbody tr:last-child td {
-  border-bottom: none;
+.win-table-row {
+  transition: background-color 0.12s ease, box-shadow 0.12s ease;
 }
 
-.win-table tbody tr.clickable {
+.win-table-cell {
+  padding: 6px 10px;
+  font-size: var(--font-size-base);
+  color: var(--win-text);
+  border: 1px solid #e0e0e0;
+  background-color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.win-table-cell.align-left {
+  text-align: left;
+}
+
+.win-table-cell.align-center {
+  text-align: center;
+}
+
+.win-table-cell.align-right {
+  text-align: right;
+}
+
+.win-table-row:nth-child(even) .win-table-cell {
+  background-color: #fbfbfb;
+}
+
+.win-table-row:hover .win-table-cell {
+  background-color: #f3f8ff;
+}
+
+.win-table-row.clickable .win-table-cell {
   cursor: pointer;
 }
 
-.win-table tbody tr.clickable:hover {
-  background: linear-gradient(to bottom, #f0f7ff 0%, #e8f4ff 100%);
-  box-shadow: inset 0 0 0 1px rgba(0, 120, 212, 0.1);
+.win-table-row.clickable:hover .win-table-cell {
+  background-color: #e8f1ff;
+  border-color: #c1d9f3;
+}
+
+.win-table-row.clickable:active .win-table-cell {
+  background-color: #ddebf7;
+  border-color: #8eb2e5;
 }
 
 .actions-column {
   width: 120px;
-  text-align: center;
-  background: linear-gradient(to bottom, #f8f8f8 0%, #f3f3f3 100%);
 }
 
 .actions-cell {
-  text-align: center;
   display: flex;
-  gap: 6px;
+  gap: 8px;
   justify-content: center;
   align-items: center;
-  background: rgba(248, 248, 248, 0.3);
-}
-
-.win-table tbody tr:hover .actions-cell {
-  background: rgba(255, 255, 255, 0.5);
 }
 
 .loading-cell,
 .empty-cell {
   text-align: center;
-  padding: 48px;
-  color: #707070;
-  font-size: 14px;
+  padding: 40px 16px;
+  color: var(--win-text-secondary);
+  font-size: var(--font-size-sm);
   font-weight: 400;
-  background: linear-gradient(to bottom, #fafafa 0%, #f8f8f8 100%);
+  background: linear-gradient(to bottom, #fafafa 0%, #f7f7f7 100%);
+  border: none;
 }
 
 .loading-cell {
-  background: white;
+  background-color: var(--win-panel);
+}
+
+/* Subtle Windows-like scrollbars inside table container */
+.win-table-container::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.win-table-container::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}
+
+.win-table-container::-webkit-scrollbar-thumb {
+  background-color: #c4c4c4;
+  border-radius: 4px;
+}
+
+.win-table-container::-webkit-scrollbar-thumb:hover {
+  background-color: #a8a8a8;
 }
 </style>

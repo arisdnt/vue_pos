@@ -1,146 +1,171 @@
-import { supabase } from '@/db/supabase'
+import { db, queueSync } from '@/db/dexie'
+import type { Database } from '@/types/database'
+
+type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type StoreRow = Database['public']['Tables']['stores']['Row']
+type StoreUserRow = Database['public']['Tables']['store_users']['Row']
 
 export interface StoreUserAssignment {
-    id: number
-    store_id: number
+    id: string
+    store_id: string
     user_id: string
     created_at: string
 }
 
 export interface StoreWithAssignment {
-    id: number
+    id: string
     name: string
     assigned: boolean
 }
 
 /**
- * Get all stores assigned to a user
+ * Get all stores assigned to a user (from Dexie)
  */
 export async function getUserStores(userId: string) {
-    const { data, error } = await supabase
-        .from('store_users')
-        .select('store_id, stores(id, name)')
-        .eq('user_id', userId)
+    const assignments = (await db
+        .table('store_users')
+        .where('user_id')
+        .equals(userId)
+        .toArray()) as StoreUserRow[]
 
-    if (error) {
-        throw new Error(`Failed to get user stores: ${error.message}`)
+    if (!assignments.length) {
+        return []
     }
 
-    return (data || []).map((item: any) => ({
-        id: item.stores.id,
-        name: item.stores.name
+    const storeIds = assignments
+        .map(a => a.store_id)
+        .filter((id): id is string => !!id)
+
+    if (!storeIds.length) {
+        return []
+    }
+
+    const stores = (await db
+        .table('stores')
+        .filter((s: any) => storeIds.includes(s.id))
+        .toArray()) as StoreRow[]
+
+    return stores.map(s => ({
+        id: s.id,
+        name: s.name,
     }))
 }
 
 /**
- * Get all users assigned to a store
+ * Get all users assigned to a store (from Dexie)
  */
-export async function getStoreUsers(storeId: number) {
-    const { data, error } = await supabase
-        .from('store_users')
-        .select('user_id, profiles(id, username, active)')
-        .eq('store_id', storeId)
+export async function getStoreUsers(storeId: string) {
+    const assignments = (await db
+        .table('store_users')
+        .where('store_id')
+        .equals(storeId)
+        .toArray()) as StoreUserRow[]
 
-    if (error) {
-        throw new Error(`Failed to get store users: ${error.message}`)
+    const userIds = assignments
+        .map(a => a.user_id)
+        .filter((id): id is string => !!id)
+
+    if (!userIds.length) {
+        return []
     }
 
-    return (data || []).map((item: any) => ({
-        id: item.profiles.id,
-        username: item.profiles.username,
-        active: item.profiles.active
+    const profiles = (await db
+        .table('profiles')
+        .filter((p: any) => userIds.includes(p.id))
+        .toArray()) as ProfileRow[]
+
+    return profiles.map(p => ({
+        id: p.id,
+        username: p.username,
+        active: p.active,
     }))
 }
 
 /**
- * Assign user to store
+ * Assign user to store (Dexie + sync_outbox)
  */
-export async function assignUserToStore(userId: string, storeId: number) {
-    // Check if assignment already exists
-    const { data: existing } = await supabase
-        .from('store_users')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('store_id', storeId)
-        .single()
+export async function assignUserToStore(userId: string, storeId: string) {
+    const existing = (await db
+        .table('store_users')
+        .where('store_id')
+        .equals(storeId)
+        .and((row: any) => row.user_id === userId)
+        .first()) as StoreUserRow | undefined
 
     if (existing) {
-        return existing // Already assigned
+        return existing
     }
 
-    const { data, error } = await supabase
-        .from('store_users')
-        .insert({ user_id: userId, store_id: storeId })
-        .select()
-        .single()
+    const id =
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
-    if (error) {
-        throw new Error(`Failed to assign user to store: ${error.message}`)
+    const nowIso = new Date().toISOString()
+
+    const row: StoreUserRow = {
+        id,
+        store_id: storeId,
+        user_id: userId,
+        role_id: null,
+        created_at: nowIso,
     }
 
-    return data
+    await db.table('store_users').put(row)
+    await queueSync('store_users', id, 'insert', row)
+
+    return row
 }
 
 /**
- * Remove user from store
+ * Remove user from store (Dexie + sync_outbox)
  */
-export async function removeUserFromStore(userId: string, storeId: number) {
-    const { error } = await supabase
-        .from('store_users')
-        .delete()
-        .eq('user_id', userId)
-        .eq('store_id', storeId)
+export async function removeUserFromStore(userId: string, storeId: string) {
+    const tbl = db.table('store_users')
+    const existing = (await tbl
+        .where('store_id')
+        .equals(storeId)
+        .and((r: any) => r.user_id === userId)
+        .first()) as StoreUserRow | undefined
 
-    if (error) {
-        throw new Error(`Failed to remove user from store: ${error.message}`)
+    if (!existing) {
+        return
     }
+
+    await tbl.delete(existing.id)
+    await queueSync('store_users', existing.id, 'delete', null)
 }
 
 /**
- * Get all store assignments for a user with assignment status
+ * Get all store assignments for a user with assignment status (from Dexie)
  */
 export async function getUserStoreAssignments(userId: string) {
-    // Get all stores
-    const { data: allStores, error: storesError } = await supabase
-        .from('stores')
-        .select('id, name')
-        .eq('active', true)
-        .order('name')
-
-    if (storesError) {
-        throw new Error(`Failed to get stores: ${storesError.message}`)
-    }
-
-    // Get user's assigned stores
+    const stores = (await db.table('stores').where('active').equals(true).toArray()) as StoreRow[]
     const assignedStores = await getUserStores(userId)
     const assignedIds = new Set(assignedStores.map(s => s.id))
 
-    return (allStores || []).map(store => ({
+    return stores.map(store => ({
         id: store.id,
         name: store.name,
-        assigned: assignedIds.has(store.id)
+        assigned: assignedIds.has(store.id),
     }))
 }
 
 /**
- * Bulk update user store assignments
+ * Bulk update user store assignments (Dexie + sync_outbox)
  */
-export async function updateUserStoreAssignments(userId: string, storeIds: number[]) {
-    // Get current assignments
+export async function updateUserStoreAssignments(userId: string, storeIds: string[]) {
     const currentStores = await getUserStores(userId)
     const currentIds = new Set(currentStores.map(s => s.id))
     const newIds = new Set(storeIds)
 
-    // Find stores to add and remove
     const toAdd = storeIds.filter(id => !currentIds.has(id))
     const toRemove = currentStores.filter(s => !newIds.has(s.id)).map(s => s.id)
 
-    // Add new assignments
     for (const storeId of toAdd) {
         await assignUserToStore(userId, storeId)
     }
 
-    // Remove old assignments
     for (const storeId of toRemove) {
         await removeUserFromStore(userId, storeId)
     }

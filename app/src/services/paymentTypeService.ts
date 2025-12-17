@@ -24,7 +24,7 @@ export async function getPaymentTypes() {
 /**
  * Get single payment type by id
  */
-export async function getPaymentType(id: number) {
+export async function getPaymentType(id: string) {
     const { data, error } = await supabase
         .from('payment_types')
         .select('*')
@@ -58,7 +58,7 @@ export async function createPaymentType(paymentType: PaymentTypeInsert) {
 /**
  * Update payment type
  */
-export async function updatePaymentType(id: number, paymentType: PaymentTypeUpdate) {
+export async function updatePaymentType(id: string, paymentType: PaymentTypeUpdate) {
     const { data, error } = await supabase
         .from('payment_types')
         .update({ ...paymentType, updated_at: new Date().toISOString() })
@@ -76,7 +76,7 @@ export async function updatePaymentType(id: number, paymentType: PaymentTypeUpda
 /**
  * Delete payment type
  */
-export async function deletePaymentType(id: number) {
+export async function deletePaymentType(id: string) {
     // Check if readonly
     const { data: existing } = await supabase
         .from('payment_types')
@@ -101,7 +101,7 @@ export async function deletePaymentType(id: number) {
 /**
  * Toggle payment type active status
  */
-export async function togglePaymentTypeActive(id: number, active: boolean) {
+export async function togglePaymentTypeActive(id: string, active: boolean) {
     const { data, error } = await supabase
         .from('payment_types')
         .update({ active, updated_at: new Date().toISOString() })

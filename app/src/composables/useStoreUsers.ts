@@ -1,42 +1,42 @@
 import { ref } from 'vue'
 import * as storeUserService from '@/services/storeUserService'
 import type { StoreWithAssignment } from '@/services/storeUserService'
+import { useDexieLiveQuery } from '@/composables/useDexieLiveQuery'
+import { db } from '@/db/dexie'
 
 export function useStoreUsers() {
-    const assignments = ref<StoreWithAssignment[]>([])
-    const loading = ref(false)
     const error = ref('')
+    const currentUserId = ref<string | null>(null)
+
+    const { data: assignments, loading } = useDexieLiveQuery<StoreWithAssignment[]>(
+        async () => {
+            if (!currentUserId.value) {
+                return []
+            }
+            return await storeUserService.getUserStoreAssignments(currentUserId.value)
+        },
+        [],
+    )
 
     async function loadUserStoreAssignments(userId: string) {
-        loading.value = true
+        currentUserId.value = userId
         error.value = ''
-
-        try {
-            assignments.value = await storeUserService.getUserStoreAssignments(userId)
-        } catch (e: any) {
-            error.value = e.message || 'Gagal memuat assignment toko'
-            console.error('Error loading assignments:', e)
-        } finally {
-            loading.value = false
-        }
+        // liveQuery akan memicu ulang query di atas
+        // dan data assignments akan ter-update otomatis
+        await db.table('store_users').toArray()
     }
 
-    async function updateAssignments(userId: string, storeIds: number[]) {
-        loading.value = true
+    async function updateAssignments(userId: string, storeIds: string[]) {
         error.value = ''
-
         try {
             await storeUserService.updateUserStoreAssignments(userId, storeIds)
-            await loadUserStoreAssignments(userId)
         } catch (e: any) {
             error.value = e.message || 'Gagal update assignment'
             throw e
-        } finally {
-            loading.value = false
         }
     }
 
-    function getAssignedStoreIds(): number[] {
+    function getAssignedStoreIds(): string[] {
         return assignments.value.filter(s => s.assigned).map(s => s.id)
     }
 
@@ -51,6 +51,6 @@ export function useStoreUsers() {
         loadUserStoreAssignments,
         updateAssignments,
         getAssignedStoreIds,
-        getAssignedStoreNames
+        getAssignedStoreNames,
     }
 }

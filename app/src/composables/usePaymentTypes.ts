@@ -1,55 +1,89 @@
-import { ref, computed } from 'vue'
-import * as paymentTypeService from '@/services/paymentTypeService'
+import { ref } from 'vue'
 import type { Database } from '@/types/database'
+import { db, queueSync } from '@/db/dexie'
+import { useDexieLiveQuery } from '@/composables/useDexieLiveQuery'
 
 type PaymentType = Database['public']['Tables']['payment_types']['Row']
 type PaymentTypeInsert = Database['public']['Tables']['payment_types']['Insert']
 type PaymentTypeUpdate = Database['public']['Tables']['payment_types']['Update']
 
 export function usePaymentTypes() {
-    const paymentTypes = ref<PaymentType[]>([])
-    const loading = ref(false)
     const error = ref('')
 
+    const { data: paymentTypes, loading } = useDexieLiveQuery<PaymentType[]>(
+        async () => {
+            const rows = (await db.table('payment_types').toArray()) as PaymentType[]
+            return rows
+        },
+        [],
+    )
+
     async function fetchPaymentTypes() {
-        loading.value = true
+        // Data sekarang di-drive oleh Dexie liveQuery.
         error.value = ''
-        try {
-            paymentTypes.value = await paymentTypeService.getPaymentTypes()
-        } catch (e: any) {
-            error.value = e.message || 'Gagal memuat data'
-        } finally {
-            loading.value = false
-        }
     }
 
     async function createPaymentType(data: PaymentTypeInsert) {
-        const result = await paymentTypeService.createPaymentType(data)
-        paymentTypes.value.push(result)
-        return result
-    }
+        const id =
+            typeof crypto !== 'undefined' && 'randomUUID' in crypto
+                ? crypto.randomUUID()
+                : `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
-    async function updatePaymentType(id: number, data: PaymentTypeUpdate) {
-        const result = await paymentTypeService.updatePaymentType(id, data)
-        const index = paymentTypes.value.findIndex(p => p.id === id)
-        if (index >= 0) {
-            paymentTypes.value[index] = result
+        const nowIso = new Date().toISOString()
+
+        const row: PaymentType = {
+            id,
+            label: data.label,
+            identifier: data.identifier,
+            description: data.description ?? null,
+            priority: data.priority ?? 0,
+            active: data.active ?? true,
+            readonly: data.readonly ?? false,
+            icon: data.icon ?? null,
+            created_at: nowIso,
+            updated_at: nowIso,
         }
-        return result
+
+        await db.table('payment_types').put(row)
+        await queueSync('payment_types', id, 'insert', row as PaymentTypeInsert)
+
+        return row
     }
 
-    async function deletePaymentType(id: number) {
-        await paymentTypeService.deletePaymentType(id)
-        paymentTypes.value = paymentTypes.value.filter(p => p.id !== id)
-    }
-
-    async function toggleActive(id: number, active: boolean) {
-        const result = await paymentTypeService.togglePaymentTypeActive(id, active)
-        const index = paymentTypes.value.findIndex(p => p.id === id)
-        if (index >= 0) {
-            paymentTypes.value[index] = result
+    async function updatePaymentType(id: string, data: PaymentTypeUpdate) {
+        const tbl = db.table('payment_types')
+        const existing = (await tbl.get(id)) as PaymentType | undefined
+        if (!existing) {
+            console.warn('[usePaymentTypes] Payment type not found in Dexie')
+            return
         }
-        return result
+
+        const nowIso = new Date().toISOString()
+        const updated: PaymentType = {
+            ...existing,
+            ...data,
+            updated_at: nowIso,
+        }
+
+        await tbl.put(updated)
+
+        const patch: PaymentTypeUpdate = {
+            ...data,
+            updated_at: updated.updated_at,
+        }
+
+        await queueSync('payment_types', id, 'update', patch)
+
+        return updated
+    }
+
+    async function deletePaymentType(id: string) {
+        await db.table('payment_types').delete(id)
+        await queueSync('payment_types', id, 'delete', null)
+    }
+
+    async function toggleActive(id: string, active: boolean) {
+        return updatePaymentType(id, { active })
     }
 
     function filterPaymentTypes(search: string, filters: Record<string, any>) {

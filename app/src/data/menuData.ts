@@ -21,6 +21,7 @@ export const menus: Menu[] = [
         label: 'File',
         items: [
             { id: 'new-transaction', label: 'Transaksi Baru', shortcut: 'Ctrl+N', route: '/pos' },
+            { id: 'dashboard', label: 'Dashboard', shortcut: 'Ctrl+D', route: '/dashboard' },
             { id: 'separator-1', label: '', separator: true },
             { id: 'sync', label: 'Sinkronisasi Data', shortcut: 'F5' },
             { id: 'separator-2', label: '', separator: true },
@@ -85,6 +86,7 @@ export const menus: Menu[] = [
             { id: 'stock-list', label: 'Stok Produk', route: '/inventory' },
             { id: 'low-stock', label: 'Stok Menipis', route: '/inventory/low-stock' },
             { id: 'separator-1', label: '', separator: true },
+            { id: 'quick-procurement', label: 'Pembelian Cepat', route: '/procurement/quick' },
             { id: 'procurement', label: 'Pembelian (PO)', route: '/procurement' },
             { id: 'suppliers', label: 'Supplier', route: '/suppliers' },
             { id: 'separator-2', label: '', separator: true },
@@ -118,6 +120,8 @@ export const menus: Menu[] = [
             { id: 'tax-settings', label: 'Pengaturan Pajak', route: '/settings/tax' },
             { id: 'receipt-settings', label: 'Format Struk', route: '/settings/receipt' },
             { id: 'separator-3', label: '', separator: true },
+            { id: 'outbox-sync', label: 'Outbox Sync', route: '/settings/outbox-sync' },
+            { id: 'separator-4', label: '', separator: true },
             { id: 'about', label: 'Tentang', shortcut: 'F1', route: '/about' },
         ]
     }

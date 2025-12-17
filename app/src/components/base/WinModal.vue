@@ -1,7 +1,7 @@
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="modelValue" class="win-modal-overlay" @click.self="handleClose">
+      <div v-if="modelValue" class="win-modal-overlay">
         <div class="win-modal-container" :class="sizeClass" role="dialog">
           <div class="win-modal-header">
             <h3 class="win-modal-title">{{ title }}</h3>

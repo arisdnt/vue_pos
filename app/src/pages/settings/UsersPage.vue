@@ -115,7 +115,7 @@ const selectedUser = ref<any | null>(null)
 const saving = ref(false)
 const formError = ref('')
 const formErrors = ref<Record<string, string>>({})
-const storeIds = ref<number[]>([])
+const storeIds = ref<string[]>([])
 
 const formData = ref({ email: '', password: '', role: '', status: 'active' })
 
@@ -193,13 +193,16 @@ async function handleSubmit() {
       await fetchUsers()
       const newUser = users.value.find(u => u.email === formData.value.email)
       if (newUser && storeIds.value.length > 0) {
-        await storeUserService.updateUserStoreAssignments(newUser.id, storeIds.value)
+        // Enforce single store assignment at UI level to match DB constraint
+        const singleStoreIds = storeIds.value.slice(0, 1)
+        await storeUserService.updateUserStoreAssignments(newUser.id, singleStoreIds)
       }
     } else if (selectedUser.value) {
       await updateUser(selectedUser.value.id, { role: formData.value.role, status: formData.value.status })
       // Update store assignments
       if (formData.value.role === 'manager' || formData.value.role === 'cashier') {
-        await storeUserService.updateUserStoreAssignments(selectedUser.value.id, storeIds.value)
+        const singleStoreIds = storeIds.value.slice(0, 1)
+        await storeUserService.updateUserStoreAssignments(selectedUser.value.id, singleStoreIds)
       }
     }
     await loadUsersWithStores()
@@ -252,13 +255,13 @@ function formatDate(dateString: string): string {
 
 async function loadUsersWithStores() {
   await fetchUsers()
-  // Load store assignments for each user
+  // Load store assignments for each user from Dexie
   for (const user of users.value) {
     if (user.role !== 'owner') {
       try {
         const stores = await storeUserService.getUserStores(user.id)
         ;(user as any).assignedStoreNames = stores.map(s => s.name)
-      } catch (e) {
+      } catch {
         ;(user as any).assignedStoreNames = []
       }
     }
